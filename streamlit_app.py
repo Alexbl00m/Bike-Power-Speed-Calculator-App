@@ -722,3 +722,98 @@ with tab2:
     )
     
     st.plotly_chart(fig, use_container_width=True)
+
+    # Third tab: Race Predictor
+    with tab3:
+        st.markdown("### Race Predictor")
+        
+        # Simple layout with basic inputs
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("#### Rider Details")
+            
+            ftp_race = st.number_input("Your FTP (watts)", min_value=100, max_value=500, value=250, key="ftp_race")
+            weight_race = st.number_input("Your weight (kg)", min_value=40.0, max_value=150.0, value=75.0, step=0.5, key="weight_race")
+            
+            # Calculate power-to-weight
+            power_to_weight = ftp_race / weight_race
+            st.markdown(f"**Power-to-weight ratio: {power_to_weight:.2f} W/kg**")
+            
+            # Event details
+            st.markdown("#### Event Details")
+            
+            event_type = st.selectbox("Event type", ["Time trial", "Road race", "Criterium", "Gran fondo"])
+            event_distance = st.number_input("Distance (km)", min_value=5.0, max_value=300.0, value=40.0, step=5.0, key="race_distance")
+            
+        with col2:
+            st.markdown("#### Predictions")
+            
+            # Basic power estimation (simplified calculation)
+            if event_type == "Time trial":
+                power_percent = 0.95
+            elif event_type == "Road race":
+                power_percent = 0.85
+            elif event_type == "Criterium":
+                power_percent = 0.90
+            else:  # Gran fondo
+                power_percent = 0.80
+                
+            sustainable_power = ftp_race * power_percent
+            
+            # Basic speed estimation
+            estimated_speed = 25 + (power_to_weight - 3) * 5  # Simple formula
+            
+            # Time calculation
+            time_hours = event_distance / estimated_speed
+            hours = int(time_hours)
+            minutes = int((time_hours - hours) * 60)
+            seconds = int(((time_hours - hours) * 60 - minutes) * 60)
+            
+            # Display results in simple format
+            st.markdown(f"**Sustainable power:** {sustainable_power:.0f} watts ({power_percent*100:.0f}% of FTP)")
+            st.markdown(f"**Estimated average speed:** {estimated_speed:.1f} km/h")
+            st.markdown(f"**Estimated finish time:** {hours:02d}:{minutes:02d}:{seconds:02d}")
+            
+            # Simple pacing advice
+            st.markdown("#### Pacing Advice")
+            st.markdown(f"- **Start:** {sustainable_power * 1.05:.0f} watts (first few minutes)")
+            st.markdown(f"- **Middle:** {sustainable_power:.0f} watts (maintain steady effort)")
+            st.markdown(f"- **Finish:** {sustainable_power * 1.03:.0f} watts (if you feel strong)")
+        
+        # Classification table
+        st.markdown("---")
+        st.markdown("### Rider Classification")
+        
+        # Create classification table
+        classifications = {
+            "Category": ["Professional", "Cat 1/Elite", "Cat 2", "Cat 3", "Cat 4/5", "Beginner"],
+            "FTP (W/kg)": ["5.0+", "4.0-5.0", "3.5-4.0", "3.0-3.5", "2.5-3.0", "< 2.5"],
+            "Description": [
+                "World Tour/Professional Continental level",
+                "Elite amateur, potential professional",
+                "Strong amateur racer, regional competitive",
+                "Intermediate club racer",
+                "Recreational racer, beginning competitive cyclist",
+                "New to cycling or casual rider"
+            ]
+        }
+        
+        class_df = pd.DataFrame(classifications)
+        st.table(class_df)
+        
+        # Show user's classification
+        if power_to_weight >= 5.0:
+            user_category = "Professional"
+        elif power_to_weight >= 4.0:
+            user_category = "Cat 1/Elite"
+        elif power_to_weight >= 3.5:
+            user_category = "Cat 2"
+        elif power_to_weight >= 3.0:
+            user_category = "Cat 3"
+        elif power_to_weight >= 2.5:
+            user_category = "Cat 4/5"
+        else:
+            user_category = "Beginner"
+            
+        st.markdown(f"**Your rider category based on power-to-weight ratio: {user_category}**")
