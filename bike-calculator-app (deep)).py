@@ -416,7 +416,6 @@ with tab1:
         powers.append(power)
     
     fig = go.Figure()
-    
     fig.add_trace(go.Scatter(
         x=speeds,
         y=powers,
