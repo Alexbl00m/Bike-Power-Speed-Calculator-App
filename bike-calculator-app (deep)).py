@@ -128,7 +128,7 @@ with col1:
     # Replace with your actual logo URL or local path if hosting the image
     st.markdown(
         '<div class="logo-container">'
-        '<img src="https://github.com/Alexbl00m/Bike-Power-Speed-Calculator-App/blob/e028c019ae5c519d68dfa28a3044cab321d63035/Logotype_Light%402x.png" class="logo-img">'
+        '<img src="Logotype_Light@2x.png" class="logo-img">'
         '</div>',
         unsafe_allow_html=True
     )
