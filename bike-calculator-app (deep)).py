@@ -386,24 +386,30 @@ with tab1:
         st.markdown(f"<div class='output-value'>{workout_difficulty}</div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
         
-        if 'f_rolling' in locals():
-            labels = ['Rolling Resistance', 'Grade Resistance', 'Air Resistance']
-            values = [f_rolling * target_speed_ms, f_grade * target_speed_ms, f_air * target_speed_ms]
-            total = sum(values)
+    # In your power distribution calculation (around line 393 in your original code)
+    if 'f_rolling' in locals():
+        labels = ['Rolling Resistance', 'Grade Resistance', 'Air Resistance']
+        values = [f_rolling * target_speed_ms, f_grade * target_speed_ms, f_air * target_speed_ms]
+        total = sum(values)
+        
+        # Add this check to prevent division by zero
+        if total > 0:
             percentages = [v/total*100 for v in values]
-            
-            st.markdown("<div class='output-label' style='margin-bottom: 10px;'>Power Distribution</div>", unsafe_allow_html=True)
-            
-            cols = st.columns(3)
-            colors = ['#4CAF50', '#FF9800', '#2196F3']
-            
-            for i, (col, label, percentage, color) in enumerate(zip(cols, labels, percentages, colors)):
-                col.markdown(f"""
-                <div style="background-color: {color}; color: white; padding: 10px; border-radius: 5px; text-align: center;">
-                    <div style="font-size: 14px;">{label}</div>
-                    <div style="font-size: 18px; font-weight: bold;">{percentage:.1f}%</div>
-                </div>
-                """, unsafe_allow_html=True)
+        else:
+            percentages = [0, 0, 0]  # Default values when total is zero
+        
+        st.markdown("<div class='output-label' style='margin-bottom: 10px;'>Power Distribution</div>", unsafe_allow_html=True)
+        
+        cols = st.columns(3)
+        colors = ['#4CAF50', '#FF9800', '#2196F3']
+        
+        for i, (col, label, percentage, color) in enumerate(zip(cols, labels, percentages, colors)):
+            col.markdown(f"""
+            <div style="background-color: {color}; color: white; padding: 10px; border-radius: 5px; text-align: center;">
+                <div style="font-size: 14px;">{label}</div>
+                <div style="font-size: 18px; font-weight: bold;">{percentage:.1f}%</div>
+            </div>
+            """, unsafe_allow_html=True)
     
     # Visualization
     st.markdown("---")
