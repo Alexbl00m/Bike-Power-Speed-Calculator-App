@@ -723,97 +723,232 @@ with tab2:
     
     st.plotly_chart(fig, use_container_width=True)
 
-    # Third tab: Race Predictor
-    with tab3:
-        st.markdown("### Race Predictor")
+# Replace the Race Predictor tab section with this updated code
+
+with tab3:
+    st.markdown("### Race Predictor")
+    
+    # Simple layout with basic inputs
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("#### Rider Details")
         
-        # Simple layout with basic inputs
-        col1, col2 = st.columns(2)
+        ftp_race = st.number_input("Your FTP (watts)", min_value=100, max_value=500, value=250, key="ftp_race")
+        weight_race = st.number_input("Your weight (kg)", min_value=40.0, max_value=150.0, value=75.0, step=0.5, key="weight_race")
         
-        with col1:
-            st.markdown("#### Rider Details")
-            
-            ftp_race = st.number_input("Your FTP (watts)", min_value=100, max_value=500, value=250, key="ftp_race")
-            weight_race = st.number_input("Your weight (kg)", min_value=40.0, max_value=150.0, value=75.0, step=0.5, key="weight_race")
-            
-            # Calculate power-to-weight
-            power_to_weight = ftp_race / weight_race
-            st.markdown(f"**Power-to-weight ratio: {power_to_weight:.2f} W/kg**")
-            
-            # Event details
-            st.markdown("#### Event Details")
-            
-            event_type = st.selectbox("Event type", ["Time trial", "Road race", "Criterium", "Gran fondo"])
-            event_distance = st.number_input("Distance (km)", min_value=5.0, max_value=300.0, value=40.0, step=5.0, key="race_distance")
-            
-        with col2:
-            st.markdown("#### Predictions")
-            
-            # Basic power estimation (simplified calculation)
-            if event_type == "Time trial":
-                power_percent = 0.95
-            elif event_type == "Road race":
-                power_percent = 0.85
-            elif event_type == "Criterium":
-                power_percent = 0.90
-            else:  # Gran fondo
-                power_percent = 0.80
-                
-            sustainable_power = ftp_race * power_percent
-            
-            # Basic speed estimation
-            estimated_speed = 25 + (power_to_weight - 3) * 5  # Simple formula
-            
-            # Time calculation
-            time_hours = event_distance / estimated_speed
-            hours = int(time_hours)
-            minutes = int((time_hours - hours) * 60)
-            seconds = int(((time_hours - hours) * 60 - minutes) * 60)
-            
-            # Display results in simple format
-            st.markdown(f"**Sustainable power:** {sustainable_power:.0f} watts ({power_percent*100:.0f}% of FTP)")
-            st.markdown(f"**Estimated average speed:** {estimated_speed:.1f} km/h")
-            st.markdown(f"**Estimated finish time:** {hours:02d}:{minutes:02d}:{seconds:02d}")
-            
-            # Simple pacing advice
-            st.markdown("#### Pacing Advice")
-            st.markdown(f"- **Start:** {sustainable_power * 1.05:.0f} watts (first few minutes)")
-            st.markdown(f"- **Middle:** {sustainable_power:.0f} watts (maintain steady effort)")
-            st.markdown(f"- **Finish:** {sustainable_power * 1.03:.0f} watts (if you feel strong)")
+        # Additional inputs needed for proper calculation
+        clothes_gear_weight_race = st.number_input("Clothes & gear (kg)", min_value=0.0, max_value=20.0, value=1.5, step=0.1, key="clothes_gear_race")
+        bike_weight_race = st.number_input("Bike weight (kg)", min_value=5.0, max_value=25.0, value=8.0, step=0.1, key="bike_weight_race")
         
-        # Classification table
-        st.markdown("---")
-        st.markdown("### Rider Classification")
+        # Calculate total system weight
+        total_weight_race = weight_race + clothes_gear_weight_race + bike_weight_race
         
-        # Create classification table
-        classifications = {
-            "Category": ["Professional", "Cat 1/Elite", "Cat 2", "Cat 3", "Cat 4/5", "Beginner"],
-            "FTP (W/kg)": ["5.0+", "4.0-5.0", "3.5-4.0", "3.0-3.5", "2.5-3.0", "< 2.5"],
-            "Description": [
-                "World Tour/Professional Continental level",
-                "Elite amateur, potential professional",
-                "Strong amateur racer, regional competitive",
-                "Intermediate club racer",
-                "Recreational racer, beginning competitive cyclist",
-                "New to cycling or casual rider"
-            ]
+        # Calculate power-to-weight
+        power_to_weight = ftp_race / weight_race
+        st.markdown(f"**Power-to-weight ratio: {power_to_weight:.2f} W/kg**")
+        st.markdown(f"**Total system weight: {total_weight_race:.1f} kg**")
+        
+        # Event details
+        st.markdown("#### Event Details")
+        
+        event_type = st.selectbox("Event type", ["Time trial", "Road race", "Criterium", "Gran fondo"])
+        event_distance = st.number_input("Distance (km)", min_value=5.0, max_value=300.0, value=40.0, step=5.0, key="race_distance")
+        
+        # Add additional ride conditions for proper physics calculation
+        st.markdown("#### Ride Conditions")
+        
+        total_elevation = st.number_input("Total climb (m)", min_value=0, max_value=5000, value=100, step=50, key="race_elevation")
+        wind_speed = st.number_input("Wind (+ headwind, - tailwind) (km/h)", min_value=-50.0, max_value=50.0, value=0.0, step=1.0, key="race_wind")
+        temperature = st.number_input("Temperature (°C)", min_value=-20, max_value=50, value=20, key="race_temp")
+        altitude = st.number_input("Altitude (m)", min_value=0, max_value=3000, value=100, key="race_altitude")
+        
+        # Calculate average grade
+        avg_grade = 100 * (total_elevation / (event_distance * 1000)) if event_distance > 0 else 0
+        st.markdown(f"**Average Grade:** {avg_grade:.2f}%")
+        
+        # Calculate air density
+        air_density = AIR_DENSITY_SEA_LEVEL * math.exp(-altitude/8000) * (273/(273+temperature))
+        
+    with col2:
+        st.markdown("#### Position & Equipment")
+        
+        # Position selection and CdA
+        position_options = [
+            "Hoods - Relaxed",
+            "Hoods - Regular",
+            "Drops - Regular",
+            "Drops - Tucked",
+            "Aero bars",
+            "TT position",
+            "TT PRO position"
+        ]
+        race_position = st.selectbox("Race position", position_options, key="race_position")
+        
+        # Default CdA values based on position
+        default_cda = {
+            "Hoods - Relaxed": 0.400,
+            "Hoods - Regular": 0.350,
+            "Drops - Regular": 0.320,
+            "Drops - Tucked": 0.300,
+            "Aero bars": 0.270,
+            "TT position": 0.230,
+            "TT PRO position": 0.190
         }
         
-        class_df = pd.DataFrame(classifications)
-        st.table(class_df)
+        race_cda = st.number_input("CdA override", min_value=0.15, max_value=0.8, value=default_cda[race_position], step=0.005, key="race_cda")
         
-        # Show user's classification
-        if power_to_weight >= 5.0:
-            user_category = "Professional"
-        elif power_to_weight >= 4.0:
-            user_category = "Cat 1/Elite"
-        elif power_to_weight >= 3.5:
-            user_category = "Cat 2"
-        elif power_to_weight >= 3.0:
-            user_category = "Cat 3"
-        elif power_to_weight >= 2.5:
-            user_category = "Cat 4/5"
-        else:
-            user_category = "Beginner"
+        # Rolling resistance and tire selection
+        tire_options = [
+            "Fast TT tire (0.0025)",
+            "Race tire (0.0033)",
+            "Race tire (0.0035)",
+            "Training tire (0.0040)",
+            "Gravel tire (0.0050)",
+            "MTB tire (0.0070)"
+        ]
+        race_tire = st.selectbox("Tire type", tire_options, key="race_tire")
+        
+        # Default Crr values based on tire type
+        default_crr = {
+            "Fast TT tire (0.0025)": 0.0025,
+            "Race tire (0.0033)": 0.0033,
+            "Race tire (0.0035)": 0.0035,
+            "Training tire (0.0040)": 0.0040,
+            "Gravel tire (0.0050)": 0.0050,
+            "MTB tire (0.0070)": 0.0070
+        }
+        
+        race_crr = st.number_input("Crr override", min_value=0.0010, max_value=0.0120, value=default_crr[race_tire], 
+                                  step=0.0001, format="%.4f", key="race_crr")
+        
+        # Drivetrain efficiency
+        drivetrain_efficiency_race = st.number_input("Drive train efficiency (%)", min_value=90.0, max_value=100.0, value=97.5, step=0.5, key="drive_eff_race")
+        
+        st.markdown("#### Predictions")
+        
+        # Basic power estimation based on event type
+        if event_type == "Time trial":
+            power_percent = 0.95
+        elif event_type == "Road race":
+            power_percent = 0.85
+        elif event_type == "Criterium":
+            power_percent = 0.90
+        else:  # Gran fondo
+            power_percent = 0.80
+                
+        sustainable_power = ftp_race * power_percent
+        
+        # Convert wind speed to m/s
+        wind_speed_ms = wind_speed / 3.6
+        
+        # Calculate speed using the physics-based model from tab1
+        def calculate_speed(power, total_weight, grade, cda, crr, wind_speed_ms, air_density, drivetrain_efficiency):
+            # Adjust power for drivetrain efficiency
+            power_at_wheel = power * (drivetrain_efficiency / 100)
             
-        st.markdown(f"**Your rider category based on power-to-weight ratio: {user_category}**")
+            # Function to find speed given power
+            def power_diff(speed_ms):
+                # Speed relative to air (accounting for wind)
+                relative_speed_ms = speed_ms + wind_speed_ms
+                
+                # Rolling resistance force
+                f_rolling = total_weight * GRAVITY * crr * math.cos(math.atan(grade/100))
+                
+                # Grade resistance force
+                f_grade = total_weight * GRAVITY * math.sin(math.atan(grade/100))
+                
+                # Air resistance force
+                f_air = 0.5 * cda * air_density * relative_speed_ms**2
+                
+                # Total resistance force
+                f_total = f_rolling + f_grade + f_air
+                
+                # Power required
+                required_power = f_total * speed_ms
+                
+                return required_power - power_at_wheel
+            
+            # Binary search to find speed
+            speed_min, speed_max = 0.1, 30.0  # m/s
+            
+            for _ in range(50):  # 50 iterations should be enough for good precision
+                speed_mid = (speed_min + speed_max) / 2
+                if power_diff(speed_mid) > 0:
+                    speed_max = speed_mid
+                else:
+                    speed_min = speed_mid
+                    
+            return (speed_min + speed_max) / 2
+        
+        # Calculate the estimated speed using proper physics
+        speed_ms = calculate_speed(sustainable_power, total_weight_race, avg_grade, race_cda, race_crr, wind_speed_ms, air_density, drivetrain_efficiency_race)
+        estimated_speed = speed_ms * 3.6  # Convert to km/h
+        
+        # Time calculation
+        time_hours = event_distance / estimated_speed if estimated_speed > 0 else 0
+        hours = int(time_hours)
+        minutes = int((time_hours - hours) * 60)
+        seconds = int(((time_hours - hours) * 60 - minutes) * 60)
+        estimated_time = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+        
+        # Display results
+        st.markdown(f"**Sustainable power:** {sustainable_power:.0f} watts ({power_percent*100:.0f}% of FTP)")
+        st.markdown(f"**Estimated average speed:** {estimated_speed:.1f} km/h")
+        st.markdown(f"**Estimated finish time:** {estimated_time}")
+            
+        # Simple pacing advice
+        st.markdown("#### Pacing Advice")
+        st.markdown(f"- **Start:** {sustainable_power * 1.05:.0f} watts (first few minutes)")
+        st.markdown(f"- **Middle:** {sustainable_power:.0f} watts (maintain steady effort)")
+        st.markdown(f"- **Finish:** {sustainable_power * 1.03:.0f} watts (if you feel strong)")
+    
+    # Calculate normalized power and TSS
+    intensity_factor = sustainable_power / ftp_race if ftp_race > 0 else 0
+    normalized_power = sustainable_power  # Simplified for steady state
+    training_stress_score = (time_hours * 3600) * (normalized_power / ftp_race) ** 2 * 100 / 3600 if ftp_race > 0 else 0
+    
+    # Display additional metrics
+    metrics_col1, metrics_col2 = st.columns(2)
+    
+    with metrics_col1:
+        st.markdown("#### Additional Metrics")
+        st.markdown(f"**Intensity Factor:** {intensity_factor:.2f} IF")
+        st.markdown(f"**Training Stress Score:** {training_stress_score:.1f} TSS")
+    
+    # Classification table
+    st.markdown("---")
+    st.markdown("### Rider Classification")
+    
+    # Create classification table
+    classifications = {
+        "Category": ["Professional", "Cat 1/Elite", "Cat 2", "Cat 3", "Cat 4/5", "Beginner"],
+        "FTP (W/kg)": ["5.0+", "4.0-5.0", "3.5-4.0", "3.0-3.5", "2.5-3.0", "< 2.5"],
+        "Description": [
+            "World Tour/Professional Continental level",
+            "Elite amateur, potential professional",
+            "Strong amateur racer, regional competitive",
+            "Intermediate club racer",
+            "Recreational racer, beginning competitive cyclist",
+            "New to cycling or casual rider"
+        ]
+    }
+    
+    class_df = pd.DataFrame(classifications)
+    st.table(class_df)
+    
+    # Show user's classification
+    if power_to_weight >= 5.0:
+        user_category = "Professional"
+    elif power_to_weight >= 4.0:
+        user_category = "Cat 1/Elite"
+    elif power_to_weight >= 3.5:
+        user_category = "Cat 2"
+    elif power_to_weight >= 3.0:
+        user_category = "Cat 3"
+    elif power_to_weight >= 2.5:
+        user_category = "Cat 4/5"
+    else:
+        user_category = "Beginner"
+            
+    st.markdown(f"**Your rider category based on power-to-weight ratio: {user_category}**")
