@@ -416,13 +416,14 @@ with tab1:
         powers.append(power)
     
     fig = go.Figure()
+    
     fig.add_trace(go.Scatter(
         x=speeds,
         y=powers,
         mode='lines',
         name='Power Required',
         line=dict(color='#E6754E', width=2)
-    )
+    ))
     
     fig.add_trace(go.Scatter(
         x=[target_speed],
@@ -430,7 +431,7 @@ with tab1:
         mode='markers',
         name='Current Point',
         marker=dict(color='#2C3E50', size=10)
-    )
+    ))
     
     fig.add_shape(
         type="line",
