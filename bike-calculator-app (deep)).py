@@ -128,7 +128,7 @@ with col1:
     # Replace with your actual logo URL or local path if hosting the image
     st.markdown(
         '<div class="logo-container">'
-        '<img src="https://cdn-icons-png.flaticon.com/512/2972/2972185.png" class="logo-img">'
+        '<img src="Logotype_Light@2x.png" class="logo-img">'
         '</div>',
         unsafe_allow_html=True
     )
@@ -460,7 +460,7 @@ with tab1:
     
     st.plotly_chart(fig, use_container_width=True)
 
-# Training Metrics Tab (unchanged from original)
+# Training Metrics Tab
 with tab2:
     st.markdown("### Training Metrics Calculator")
     
@@ -589,7 +589,7 @@ with tab2:
         personal_zones_df = pd.DataFrame(personal_zones)
         st.table(personal_zones_df)
 
-# Race Predictor Tab (unchanged from original)
+# Race Predictor Tab
 with tab3:
     st.markdown("### Race Predictor")
     col1, col2 = st.columns(2)
